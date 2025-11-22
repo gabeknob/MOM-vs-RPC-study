@@ -4,46 +4,92 @@ import (
 	"context"
 	"log"
 	"net"
+	"os"
+	"strings"
 	"sync"
 	"time"
 
 	pb "simulation/pkg/protocol"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
 )
 
 type LoadBalancerServer struct {
 	pb.UnimplementedSimulationServiceServer
 	clients map[string]pb.SimulationServiceClient
 
-	workerUrls []string
-	mu         sync.Mutex
-	counter    int
+	workerUrls    []string
+	workerPending map[string]int32
+	workerReqs    map[string]uint32
+	isHealthy     map[string]bool
+
+	mu      sync.Mutex
+	counter int
 }
 
 func (s *LoadBalancerServer) GetSalesMetrics(ctx context.Context, req *pb.SalesRequest) (*pb.SalesResponse, error) {
 	s.mu.Lock()
-	workerUrl := s.workerUrls[s.counter%len(s.workerUrls)]
-	s.counter++
+
+	bestWorker := ""
+	minPending := int32(999999)
+
+	availableCount := 0
+	numWorkers := len(s.workerUrls)
+
+	startIndex := s.counter % numWorkers
+	s.counter++ // Increment for next time
+
+	for i := 0; i < numWorkers; i++ {
+		idx := (startIndex + i) % numWorkers
+		url := s.workerUrls[idx]
+
+		if !s.isHealthy[url] {
+			continue
+		}
+		availableCount++
+
+		pending := s.workerPending[url]
+
+		if pending < minPending {
+			minPending = pending
+			bestWorker = url
+		}
+	}
+
+	if availableCount == 0 {
+		return nil, status.Errorf(codes.Unavailable, "No healthy workers available to handle request")
+	}
+
+	s.workerPending[bestWorker]++
+	s.workerReqs[bestWorker]++
+
 	s.mu.Unlock()
 
-	log.Printf("LB: Forwarding request to Worker at %s", workerUrl)
+	log.Printf("Routing to %s (Pending: %d)", bestWorker, minPending)
 
-	workerClient := s.clients[workerUrl]
+	workerClient := s.clients[bestWorker]
+	resp, err := workerClient.GetSalesMetrics(ctx, req)
 
-	return workerClient.GetSalesMetrics(ctx, req)
+	s.mu.Lock()
+	s.workerPending[bestWorker]--
+	s.mu.Unlock()
+
+	return resp, err
 }
 
 func main() {
-	workerUrls := []string{"localhost:50052", "localhost:50053"}
-
 	lb := &LoadBalancerServer{
-		clients:    make(map[string]pb.SimulationServiceClient),
-		workerUrls: workerUrls,
+		clients:       make(map[string]pb.SimulationServiceClient),
+		workerPending: make(map[string]int32),
+		workerUrls:    strings.Split(os.Getenv("WORKER_URLS"), ","),
+		workerReqs:    make(map[string]uint32),
+		isHealthy:     make(map[string]bool),
 	}
 
-	for _, url := range workerUrls {
+	for _, url := range lb.workerUrls {
 		conn, err := grpc.NewClient(url, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			log.Printf("Failed to connect to worker %s: %v", url, err)
@@ -54,30 +100,37 @@ func main() {
 
 	go func() {
 		ticker := time.NewTicker(2 * time.Second)
+		report := time.NewTicker(10 * time.Second)
 
-		for range ticker.C {
-			log.Println("------ Health Check ------")
-			for url, client := range lb.clients {
-				ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-				stats, err := client.GetSystemStats(ctx, &pb.Empty{})
+		for {
+			select {
+			case <-ticker.C:
+				for url, client := range lb.clients {
+					ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
+					_, err := client.GetSystemStats(ctx, &pb.Empty{})
 
-				if err != nil {
-					log.Printf("Worker [%s] is DOWN: %v", url, err)
-				} else {
-					log.Printf("Worker [%s]: RAM=%d MB, Routines=%d",
-						url,
-						stats.MemoryUsage/1024/1024, // Convert bytes to MB
-						stats.ActiveGoroutines,
-					)
+					lb.mu.Lock()
+					if err != nil {
+						if lb.isHealthy[url] {
+							log.Printf("Worker [%s] DOWN", url)
+						}
+						lb.isHealthy[url] = false
+					} else {
+						if !lb.isHealthy[url] {
+							log.Printf("Worker [%s] RECOVERED", url)
+						}
+						lb.isHealthy[url] = true
+					}
+					lb.mu.Unlock()
+					cancel()
 				}
-
-				cancel()
+			case <-report.C:
+				log.Printf("Worker requests: %v", lb.workerReqs)
 			}
-			log.Println("--------------------------")
 		}
 	}()
 
-	listener, err := net.Listen("tcp", ":50051")
+	listener, err := net.Listen("tcp", ":80")
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
@@ -86,7 +139,7 @@ func main() {
 
 	pb.RegisterSimulationServiceServer(grpcServer, lb)
 
-	log.Println("RPC Load Balancer running on :50051...")
+	log.Println("RPC Load Balancer running on :80...")
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}

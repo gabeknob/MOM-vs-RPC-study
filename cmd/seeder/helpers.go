@@ -10,38 +10,38 @@ import (
 )
 
 func populateRegions(regions *[]db.Region) {
-	for index, regionName := range regionNames {
+	for index, regionName := range db.RegionNames {
 		(*regions)[index] = db.Region{Name: regionName}
 	}
 }
 
 func populateProducts(products *[]db.Product) {
-	for _, adjective := range productAdjectives {
-		for _, category := range productCategories {
-			productNames = append(productNames, fmt.Sprintf("%s %s", adjective, category))
+	for _, adjective := range db.ProductAdjectives {
+		for _, category := range db.ProductCategories {
+			db.ProductNames = append(db.ProductNames, fmt.Sprintf("%s %s", adjective, category))
 		}
 	}
-	for index, name := range productNames {
-		(*products)[index] = db.Product{Name: name, Category: productCategories[rand.IntN(len(productCategories))], Price: float64(rand.IntN(150000) / 10)}
+	for index, name := range db.ProductNames {
+		(*products)[index] = db.Product{Name: name, Category: db.ProductCategories[rand.IntN(len(db.ProductCategories))], Price: float64(rand.IntN(150000) / 10)}
 	}
 }
 
 func populateCustomers(customers *[]db.Customer) {
-	for _, firstName := range customerFirstNames {
-		for _, lastName := range customerLastNames {
+	for _, firstName := range db.CustomerFirstNames {
+		for _, lastName := range db.CustomerLastNames {
 			*customers = append(*customers, db.Customer{FirstName: firstName, LastName: lastName})
 		}
 	}
 }
 
 func populateStores(stores *[]db.Store, regions *[]db.Region) {
-	for _, adjective := range storeAdjectives {
-		for _, brand := range storeBrands {
-			storeNames = append(storeNames, fmt.Sprintf("%s %s", adjective, brand))
+	for _, adjective := range db.StoreAdjectives {
+		for _, brand := range db.StoreBrands {
+			db.StoreNames = append(db.StoreNames, fmt.Sprintf("%s %s", adjective, brand))
 		}
 	}
 
-	for index, name := range storeNames {
+	for index, name := range db.StoreNames {
 		randomIndex := rand.IntN(len(*regions))
 		randomRegionID := (*regions)[randomIndex].ID
 

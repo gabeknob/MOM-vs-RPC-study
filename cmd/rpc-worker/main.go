@@ -22,8 +22,6 @@ type WorkerServer struct {
 }
 
 func (s *WorkerServer) GetSalesMetrics(_ context.Context, req *pb.SalesRequest) (*pb.SalesResponse, error) {
-	log.Printf("Worker received query for Region: %s, Category: %s", req.Region, req.Category)
-
 	// 1. Start Building the Query
 	// We start with the 'Sale' model because that's what we are counting.
 	query := s.DB.Model(&db.Sale{})
@@ -89,7 +87,8 @@ func (s *WorkerServer) GetSalesMetrics(_ context.Context, req *pb.SalesRequest) 
 		totalRevenue = 0
 	}
 
-	log.Printf("Query finished. Found %d sales totaling $%.2f", totalCount, totalRevenue)
+	//duration := time.Since(timeStart)
+	//log.Printf("Query finished in %d. Found %d sales totaling $%.2f", duration.Milliseconds(), totalCount, totalRevenue)
 
 	return &pb.SalesResponse{
 		TotalSalesCount: totalCount,

@@ -1,0 +1,44 @@
+services:
+  rpc-lb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: rpc-lb
+    ports:
+      - "50051:80"
+    environment:
+      - WORKER_URLS=rpc-worker-1:50052,rpc-worker-2:50052,rpc-worker-3:50052
+    depends_on:
+      - rpc-worker-1
+      - rpc-worker-2
+
+  rpc-worker-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: rpc-worker
+    command: ["./app", "50052"]
+    volumes:
+      - ./database.db:/root/database.db
+
+  rpc-worker-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: rpc-worker
+    command: ["./app", "50052"]
+    volumes:
+      - ./database.db:/root/database.db
+
+  rpc-worker-3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: rpc-worker
+    command: ["./app", "50052"]
+    volumes:
+      - ./database.db:/root/database.db
