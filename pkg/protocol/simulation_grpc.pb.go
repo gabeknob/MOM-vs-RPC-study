@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	SimulationService_GetSalesMetrics_FullMethodName = "/protocol.SimulationService/GetSalesMetrics"
+	SimulationService_GetSystemStats_FullMethodName  = "/protocol.SimulationService/GetSystemStats"
 )
 
 // SimulationServiceClient is the client API for SimulationService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SimulationServiceClient interface {
 	GetSalesMetrics(ctx context.Context, in *SalesRequest, opts ...grpc.CallOption) (*SalesResponse, error)
+	GetSystemStats(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*SystemStats, error)
 }
 
 type simulationServiceClient struct {
@@ -47,11 +49,22 @@ func (c *simulationServiceClient) GetSalesMetrics(ctx context.Context, in *Sales
 	return out, nil
 }
 
+func (c *simulationServiceClient) GetSystemStats(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*SystemStats, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SystemStats)
+	err := c.cc.Invoke(ctx, SimulationService_GetSystemStats_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SimulationServiceServer is the server API for SimulationService service.
 // All implementations must embed UnimplementedSimulationServiceServer
 // for forward compatibility.
 type SimulationServiceServer interface {
 	GetSalesMetrics(context.Context, *SalesRequest) (*SalesResponse, error)
+	GetSystemStats(context.Context, *Empty) (*SystemStats, error)
 	mustEmbedUnimplementedSimulationServiceServer()
 }
 
@@ -64,6 +77,9 @@ type UnimplementedSimulationServiceServer struct{}
 
 func (UnimplementedSimulationServiceServer) GetSalesMetrics(context.Context, *SalesRequest) (*SalesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSalesMetrics not implemented")
+}
+func (UnimplementedSimulationServiceServer) GetSystemStats(context.Context, *Empty) (*SystemStats, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSystemStats not implemented")
 }
 func (UnimplementedSimulationServiceServer) mustEmbedUnimplementedSimulationServiceServer() {}
 func (UnimplementedSimulationServiceServer) testEmbeddedByValue()                           {}
@@ -104,6 +120,24 @@ func _SimulationService_GetSalesMetrics_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SimulationService_GetSystemStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SimulationServiceServer).GetSystemStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SimulationService_GetSystemStats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SimulationServiceServer).GetSystemStats(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // SimulationService_ServiceDesc is the grpc.ServiceDesc for SimulationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +148,10 @@ var SimulationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetSalesMetrics",
 			Handler:    _SimulationService_GetSalesMetrics_Handler,
+		},
+		{
+			MethodName: "GetSystemStats",
+			Handler:    _SimulationService_GetSystemStats_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

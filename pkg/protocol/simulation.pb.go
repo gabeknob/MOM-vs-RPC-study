@@ -205,6 +205,102 @@ func (x *SalesResponse) GetRegionProcessed() string {
 	return ""
 }
 
+type Empty struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Empty) Reset() {
+	*x = Empty{}
+	mi := &file_pkg_protocol_simulation_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Empty) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Empty) ProtoMessage() {}
+
+func (x *Empty) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_protocol_simulation_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Empty.ProtoReflect.Descriptor instead.
+func (*Empty) Descriptor() ([]byte, []int) {
+	return file_pkg_protocol_simulation_proto_rawDescGZIP(), []int{2}
+}
+
+type SystemStats struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	CpuUsage         float64                `protobuf:"fixed64,1,opt,name=cpu_usage,json=cpuUsage,proto3" json:"cpu_usage,omitempty"`
+	MemoryUsage      uint64                 `protobuf:"varint,2,opt,name=memory_usage,json=memoryUsage,proto3" json:"memory_usage,omitempty"`
+	ActiveGoroutines uint32                 `protobuf:"varint,3,opt,name=active_goroutines,json=activeGoroutines,proto3" json:"active_goroutines,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *SystemStats) Reset() {
+	*x = SystemStats{}
+	mi := &file_pkg_protocol_simulation_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SystemStats) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SystemStats) ProtoMessage() {}
+
+func (x *SystemStats) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_protocol_simulation_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SystemStats.ProtoReflect.Descriptor instead.
+func (*SystemStats) Descriptor() ([]byte, []int) {
+	return file_pkg_protocol_simulation_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *SystemStats) GetCpuUsage() float64 {
+	if x != nil {
+		return x.CpuUsage
+	}
+	return 0
+}
+
+func (x *SystemStats) GetMemoryUsage() uint64 {
+	if x != nil {
+		return x.MemoryUsage
+	}
+	return 0
+}
+
+func (x *SystemStats) GetActiveGoroutines() uint32 {
+	if x != nil {
+		return x.ActiveGoroutines
+	}
+	return 0
+}
+
 var File_pkg_protocol_simulation_proto protoreflect.FileDescriptor
 
 const file_pkg_protocol_simulation_proto_rawDesc = "" +
@@ -232,9 +328,15 @@ const file_pkg_protocol_simulation_proto_rawDesc = "" +
 	"\x11total_sales_count\x18\x01 \x01(\x03R\x0ftotalSalesCount\x12#\n" +
 	"\rtotal_revenue\x18\x02 \x01(\x03R\ftotalRevenue\x12%\n" +
 	"\x0eaverage_amount\x18\x03 \x01(\x01R\raverageAmount\x12)\n" +
-	"\x10region_processed\x18\x04 \x01(\tR\x0fregionProcessed2W\n" +
+	"\x10region_processed\x18\x04 \x01(\tR\x0fregionProcessed\"\a\n" +
+	"\x05Empty\"z\n" +
+	"\vSystemStats\x12\x1b\n" +
+	"\tcpu_usage\x18\x01 \x01(\x01R\bcpuUsage\x12!\n" +
+	"\fmemory_usage\x18\x02 \x01(\x04R\vmemoryUsage\x12+\n" +
+	"\x11active_goroutines\x18\x03 \x01(\rR\x10activeGoroutines2\x91\x01\n" +
 	"\x11SimulationService\x12B\n" +
-	"\x0fGetSalesMetrics\x12\x16.protocol.SalesRequest\x1a\x17.protocol.SalesResponseB\x19Z\x17simulation/pkg/protocolb\x06proto3"
+	"\x0fGetSalesMetrics\x12\x16.protocol.SalesRequest\x1a\x17.protocol.SalesResponse\x128\n" +
+	"\x0eGetSystemStats\x12\x0f.protocol.Empty\x1a\x15.protocol.SystemStatsB\x19Z\x17simulation/pkg/protocolb\x06proto3"
 
 var (
 	file_pkg_protocol_simulation_proto_rawDescOnce sync.Once
@@ -248,16 +350,20 @@ func file_pkg_protocol_simulation_proto_rawDescGZIP() []byte {
 	return file_pkg_protocol_simulation_proto_rawDescData
 }
 
-var file_pkg_protocol_simulation_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_pkg_protocol_simulation_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_pkg_protocol_simulation_proto_goTypes = []any{
 	(*SalesRequest)(nil),  // 0: protocol.SalesRequest
 	(*SalesResponse)(nil), // 1: protocol.SalesResponse
+	(*Empty)(nil),         // 2: protocol.Empty
+	(*SystemStats)(nil),   // 3: protocol.SystemStats
 }
 var file_pkg_protocol_simulation_proto_depIdxs = []int32{
 	0, // 0: protocol.SimulationService.GetSalesMetrics:input_type -> protocol.SalesRequest
-	1, // 1: protocol.SimulationService.GetSalesMetrics:output_type -> protocol.SalesResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	2, // 1: protocol.SimulationService.GetSystemStats:input_type -> protocol.Empty
+	1, // 2: protocol.SimulationService.GetSalesMetrics:output_type -> protocol.SalesResponse
+	3, // 3: protocol.SimulationService.GetSystemStats:output_type -> protocol.SystemStats
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -275,7 +381,7 @@ func file_pkg_protocol_simulation_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pkg_protocol_simulation_proto_rawDesc), len(file_pkg_protocol_simulation_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
+	"runtime"
 	"time"
 
 	"google.golang.org/grpc"
@@ -19,7 +21,7 @@ type WorkerServer struct {
 	DB *gorm.DB
 }
 
-func (s *WorkerServer) GetSalesMetrics(ctx context.Context, req *pb.SalesRequest) (*pb.SalesResponse, error) {
+func (s *WorkerServer) GetSalesMetrics(_ context.Context, req *pb.SalesRequest) (*pb.SalesResponse, error) {
 	log.Printf("Worker received query for Region: %s, Category: %s", req.Region, req.Category)
 
 	// 1. Start Building the Query
@@ -111,10 +113,27 @@ func parseFlexibleDate(dateStr string) (time.Time, error) {
 	return time.Time{}, fmt.Errorf("unable to parse date: %s", dateStr)
 }
 
+func (s *WorkerServer) GetSystemStats(_ context.Context, _ *pb.Empty) (*pb.SystemStats, error) {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+
+	return &pb.SystemStats{
+		MemoryUsage:      m.Alloc,
+		ActiveGoroutines: uint32(runtime.NumGoroutine()),
+		CpuUsage:         0.0, // TODO: Add CPU usage tracking
+	}, nil
+}
+
 func main() {
 	database := db.Init("./database.db")
 
-	listener, err := net.Listen("tcp", ":50052")
+	port := ":50052"
+
+	if len(os.Args) > 1 {
+		port = fmt.Sprintf(":%s", os.Args[1])
+	}
+
+	listener, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
@@ -124,7 +143,7 @@ func main() {
 
 	pb.RegisterSimulationServiceServer(grpcServer, worker)
 
-	log.Println("RPC Worker running on :50052...")
+	log.Printf("RPC Worker running on %s...", port)
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}
