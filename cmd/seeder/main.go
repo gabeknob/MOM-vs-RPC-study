@@ -18,12 +18,11 @@ func main() {
 		return
 	}
 
-	var regions = make([]db.Region, len(regionNames))
-	var products = make([]db.Product, cap(productNames))
-	var customers = make([]db.Customer, 0, len(customerFirstNames)*len(customerLastNames))
-	var stores = make([]db.Store, cap(storeNames))
-	var sales = make([]db.Sale, 10000)
-
+	var regions = make([]db.Region, len(db.RegionNames))
+    var products = make([]db.Product, len(db.ProductAdjectives)*len(db.ProductCategories))
+    var customers = make([]db.Customer, 0, len(db.CustomerFirstNames)*len(db.CustomerLastNames))
+    var stores = make([]db.Store, len(db.StoreAdjectives)*len(db.StoreBrands))
+    var sales = make([]db.Sale, 10000)
 	populateRegions(&regions)
 	result := database.Create(&regions)
 	if result.Error != nil {

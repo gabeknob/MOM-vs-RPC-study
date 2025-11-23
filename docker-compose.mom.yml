@@ -1,0 +1,115 @@
+version: "3.9"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672" # AMQP Broker
+      - "15672:15672" # Management UI (http://localhost:15672)
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - mom-network
+
+  mom-lb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mom-lb
+    container_name: mom-lb
+    environment:
+      - WORKER_QUEUES=mom-worker-1,mom-worker-2,mom-worker-3
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mom-worker-1:
+        condition: service_started
+      mom-worker-2:
+        condition: service_started
+      mom-worker-3:
+        condition: service_started
+    restart: on-failure
+    networks:
+      - mom-network
+
+  mom-worker-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mom-worker
+    container_name: mom-worker-1
+    environment:
+      - QUEUE_NAME=mom-worker-1
+      - WORKER_ID=mom-worker-1
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - DB_PATH=/app/database.db
+    volumes:
+      - ./database.db:/app/database.db:ro # Read-only
+    # IMPORTANTE: SQLite precisa de WAL mode para leitura concorrente
+    # Executar antes: sqlite3 database.db "PRAGMA journal_mode=WAL;"
+    user: "1000:1000" # Match Dockerfile non-root user
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - mom-network
+
+  mom-worker-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mom-worker
+    container_name: mom-worker-2
+    environment:
+      - QUEUE_NAME=mom-worker-2
+      - WORKER_ID=mom-worker-2
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - DB_PATH=/app/database.db
+    volumes:
+      - ./database.db:/app/database.db:ro
+    user: "1000:1000"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - mom-network
+
+  mom-worker-3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mom-worker
+    container_name: mom-worker-3
+    environment:
+      - QUEUE_NAME=mom-worker-3
+      - WORKER_ID=mom-worker-3
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - DB_PATH=/app/database.db
+    volumes:
+      - ./database.db:/app/database.db:ro
+    user: "1000:1000"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - mom-network
+
+networks:
+  mom-network:
+    driver: bridge
