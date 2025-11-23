@@ -19,7 +19,7 @@ func int32ptr(n int32) *int32 {
 }
 
 func main() {
-	targetRate := 400
+	targetRate := 100
 	duration := 30 * time.Second
 	concurrency := 15
 
