@@ -7,7 +7,7 @@ import (
 	"net"
 	"os"
 	"runtime"
-	"time"
+	"simulation/pkg/utils"
 
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
@@ -22,8 +22,6 @@ type WorkerServer struct {
 }
 
 func (s *WorkerServer) GetSalesMetrics(_ context.Context, req *pb.SalesRequest) (*pb.SalesResponse, error) {
-	// 1. Start Building the Query
-	// We start with the 'Sale' model because that's what we are counting.
 	query := s.DB.Model(&db.Sale{})
 
 	// Filter by Region (Requires joining Store -> Region)
@@ -57,12 +55,12 @@ func (s *WorkerServer) GetSalesMetrics(_ context.Context, req *pb.SalesRequest) 
 
 	// Filter by Date Range
 	if req.StartDate != "" {
-		start, _ := parseFlexibleDate(req.StartDate)
+		start, _ := utils.ParseFlexibleDate(req.StartDate)
 		query = query.Where("sales.date >= ?", start)
 	}
 
 	if req.EndDate != "" {
-		end, _ := parseFlexibleDate(req.EndDate)
+		end, _ := utils.ParseFlexibleDate(req.EndDate)
 		query = query.Where("sales.date <= ?", end)
 	}
 
@@ -87,29 +85,11 @@ func (s *WorkerServer) GetSalesMetrics(_ context.Context, req *pb.SalesRequest) 
 		totalRevenue = 0
 	}
 
-	//duration := time.Since(timeStart)
-	//log.Printf("Query finished in %d. Found %d sales totaling $%.2f", duration.Milliseconds(), totalCount, totalRevenue)
-
 	return &pb.SalesResponse{
 		TotalSalesCount: totalCount,
 		TotalRevenue:    int64(totalRevenue),
 		RegionProcessed: "Worker-50052",
 	}, nil
-}
-
-func parseFlexibleDate(dateStr string) (time.Time, error) {
-	layouts := []string{
-		"2006-01-02 15:04:05",
-		"2006-01-02 15:04",
-		"2006-01-02",
-	}
-
-	for _, layout := range layouts {
-		if t, err := time.Parse(layout, dateStr); err == nil {
-			return t, nil
-		}
-	}
-	return time.Time{}, fmt.Errorf("unable to parse date: %s", dateStr)
 }
 
 func (s *WorkerServer) GetSystemStats(_ context.Context, _ *pb.Empty) (*pb.SystemStats, error) {
