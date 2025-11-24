@@ -1,0 +1,171 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Workers (Consumers)
+  mixed-worker-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mixed-worker
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - ./database.db:/root/database.db
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  mixed-worker-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mixed-worker
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - ./database.db:/root/database.db
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  mixed-worker-3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mixed-worker
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - ./database.db:/root/database.db
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  mixed-worker-4:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mixed-worker
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - ./database.db:/root/database.db
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  mixed-worker-5:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mixed-worker
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - ./database.db:/root/database.db
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  mixed-worker-6:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mixed-worker
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - ./database.db:/root/database.db
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  mixed-worker-7:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mixed-worker
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - ./database.db:/root/database.db
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  mixed-worker-8:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mixed-worker
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - ./database.db:/root/database.db
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  mixed-worker-9:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mixed-worker
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - ./database.db:/root/database.db
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  mixed-worker-10:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mixed-worker
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - ./database.db:/root/database.db
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  # Load Balancer
+  mom-lb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mom-lb
+    ports:
+      - "50051:50051" # Same port as RPC LB so Client doesn't need changes
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
