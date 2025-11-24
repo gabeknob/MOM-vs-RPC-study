@@ -82,7 +82,7 @@ func (c *MomClient) PublishRequest(ctx context.Context, ch *amqp.Channel, req mo
 	err = ch.PublishWithContext(
 		ctx,
 		"",
-		"worker_queue",
+		"lb_queue",
 		false,
 		false,
 		amqp.Publishing{
@@ -109,7 +109,7 @@ func int32ptr(n int32) *int32 {
 }
 
 func main() {
-	targetRate := 100
+	targetRate := 1000
 	duration := 30 * time.Second
 	concurrency := 15
 
@@ -118,22 +118,20 @@ func main() {
 		rabbitUrl = "amqp://guest:guest@localhost:5672/"
 	}
 
-	mc := &MomClient{
-		conn:        nil,
-		pendingReqs: make(map[string]chan mom.SalesResponse),
-		channels:    make([]*amqp.Channel, 0, concurrency),
-	}
-
-	var err error
-	mc.conn, err = amqp.Dial(rabbitUrl)
+	conn, err := amqp.Dial(rabbitUrl)
 	mom.FailOnError(err, "Failed to connect to RabbitMQ")
-
 	defer func(conn *amqp.Connection) {
 		err := conn.Close()
 		if err != nil {
 			log.Printf("Error closing RabbitMQ connection: %s", err)
 		}
-	}(mc.conn)
+	}(conn)
+
+	mc := &MomClient{
+		conn:        conn,
+		pendingReqs: make(map[string]chan mom.SalesResponse),
+		channels:    make([]*amqp.Channel, 0, concurrency),
+	}
 
 	log.Println("Connecting channels...")
 	for i := 0; i < concurrency; i++ {
@@ -178,8 +176,8 @@ func main() {
 			case <-ticker.C:
 				go func(ch *amqp.Channel) {
 					start := time.Now()
-					ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-					defer cancel()
+					//ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+					//defer cancel()
 
 					//region := db.RegionNames[rand.IntN(len(db.RegionNames))]
 					//category := db.ProductCategories[rand.IntN(len(db.ProductCategories))]
@@ -196,7 +194,8 @@ func main() {
 						StartHour: int32ptr(int32(hourRangeStart)),
 						EndHour:   int32ptr(int32(hourRangeEnd)),
 					}
-					res, err := mc.PublishRequest(ctx, ch, req)
+					res, err := mc.PublishRequest(context.Background(), ch, req)
+					//res, err := mc.PublishRequest(ctx, ch, req)
 
 					elapsed := time.Since(start).Milliseconds()
 

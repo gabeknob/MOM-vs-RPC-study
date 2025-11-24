@@ -133,7 +133,7 @@ func main() {
 	)
 	mom.FailOnError(err, "Failed to register a consumer")
 
-	log.Printf("🐰 MOM Worker waiting for messages on %s", q.Name)
+	log.Printf("MOM Worker waiting for messages on %s", q.Name)
 
 	forever := make(chan struct{})
 

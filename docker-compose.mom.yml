@@ -29,73 +29,143 @@ services:
       rabbitmq:
         condition: service_healthy
 
-#  mom-worker-2:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#      args:
-#        APP_NAME: mom-worker
-#    environment:
-#      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
-#    volumes:
-#      - ./database.db:/root/database.db
-#    depends_on:
-#      rabbitmq:
-#        condition: service_healthy
-#
-#  mom-worker-3:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#      args:
-#        APP_NAME: mom-worker
-#    environment:
-#      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
-#    volumes:
-#      - ./database.db:/root/database.db
-#    depends_on:
-#      rabbitmq:
-#        condition: service_healthy
-#
-#  mom-worker-4:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#      args:
-#        APP_NAME: mom-worker
-#    environment:
-#      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
-#    volumes:
-#      - ./database.db:/root/database.db
-#    depends_on:
-#      rabbitmq:
-#        condition: service_healthy
-#
-#  mom-worker-5:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#      args:
-#        APP_NAME: mom-worker
-#    environment:
-#      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
-#    volumes:
-#      - ./database.db:/root/database.db
-#    depends_on:
-#      rabbitmq:
-#        condition: service_healthy
+  mom-worker-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mom-worker
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - ./database.db:/root/database.db
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  mom-worker-3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mom-worker
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - ./database.db:/root/database.db
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  mom-worker-4:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mom-worker
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - ./database.db:/root/database.db
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  mom-worker-5:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mom-worker
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - ./database.db:/root/database.db
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  mom-worker-6:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mom-worker
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - ./database.db:/root/database.db
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  mom-worker-7:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mom-worker
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - ./database.db:/root/database.db
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  mom-worker-8:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mom-worker
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - ./database.db:/root/database.db
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  mom-worker-9:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mom-worker
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - ./database.db:/root/database.db
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  mom-worker-10:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mom-worker
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - ./database.db:/root/database.db
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
 
   # Load Balancer
-  # mom-lb:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #     args:
-  #       APP_NAME: mom-lb
-  #   ports:
-  #     - "50051:50051" # Same port as RPC LB so Client doesn't need changes
-  #   environment:
-  #     - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
+  mom-lb:
+   build:
+     context: .
+     dockerfile: Dockerfile
+     args:
+       APP_NAME: mom-lb
+   ports:
+     - "50051:50051" # Same port as RPC LB so Client doesn't need changes
+   environment:
+     - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+   depends_on:
+     rabbitmq:
+       condition: service_healthy
