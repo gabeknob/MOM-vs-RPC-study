@@ -11,19 +11,41 @@ rpsResults  = [135.87 , 361 , 474 , 564, 614]
 
 datasets = {
     "RPS": rpsResults,
-    "avg Latency Test 1": avg_latency_test1,
-    "avg Latency Test 2": avg_latency_test2,
-    "avg Latency Test 3": avg_latency_test3,
-    "avg Latency Test 4": avg_latency_test4,
-    "avg Latency Test 5": avg_latency_test5,
+    "max 135 RPS": avg_latency_test1,
+    "max 361 RPS": avg_latency_test2,
+    "max 474 RPS": avg_latency_test3,
+    "max 564 RPS": avg_latency_test4,
+    "max 614 RPS": avg_latency_test5,
 }
 
 for name, data in datasets.items():
+    
     plt.figure(figsize=(8,5))
-    plt.bar(workers, data)
-    plt.xlabel("Workers")
-    plt.ylabel("ms")
-    plt.title(f"{name} vs Workers")
+    
+    bars = plt.bar(workers, data)
+
+    # --- ADICIONAR VALORES ACIMA DAS BARRAS ---
+    for bar in bars:
+        height = bar.get_height()
+        plt.text(
+            bar.get_x() + bar.get_width() / 2,
+            height,
+            f"{height:.2f}",
+            ha="center",
+            va="bottom",
+            fontsize=9
+        )
+    # ------------------------------------------
+
+    if name != "RPS":
+        plt.xlabel("número de Workers")
+        plt.ylabel("ms")
+        plt.title(f"Latência média vs Número de workers a {name}")
+    else:
+        plt.xlabel("número de Workers")
+        plt.ylabel("número de requests")
+        plt.title(f"RPS máximo vs número de Workers")
+
     plt.grid(axis="y")
-    plt.savefig(f"{name}")
-    #plt.show()
+    plt.savefig(f"{name}.png")   # salva como PNG certinho
+    # plt.show()
